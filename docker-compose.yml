@@ -7,7 +7,7 @@ networks:
     driver: ${NETWORK_DRIVER}
 
 volumes:
-  elasticseasrch_data:
+  elasticsearch_data:
     name: elasticsearch_data
     driver: ${VOLUME_DRIVER}
   kibana_data:
@@ -16,6 +16,7 @@ volumes:
 
 services:
   elasticsearch:
+    container_name: elasticsearch
     image: elasticsearch:${STACK_VERSION}
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
@@ -23,13 +24,19 @@ services:
       - elk_network
     ports:
       - ${ES_PORT}:${ES_PORT}
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=elk-cluster
+      - discovery.type=single-node
+      - xpack.security.enabled=false
     healthcheck:
-      test: ["CMD","curl","-f","http://localhost:${ES_PORT}"]
+      test: ["CMD-SHELL","curl -f -X GET http://localhost:${ES_PORT}/_cat/health"]
       interval: ${HEALTHCHECK_INTERVAL}
       timeout: 10s
       retries: 10
 
   kibana:
+    container_name: kibana
     image: kibana:${STACK_VERSION}
     volumes:
       - kibana_data:/usr/share/kibana/data
