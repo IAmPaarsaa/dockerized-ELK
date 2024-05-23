@@ -17,27 +17,25 @@ volumes:
 services:
   elasticsearch:
     container_name: elasticsearch
-    image: elasticsearch:${STACK_VERSION}
+    image: docker.arvancloud.ir/elasticsearch:${STACK_VERSION}
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
     networks:
       - elk_network
     ports:
       - ${ES_PORT}:${ES_PORT}
-    environment:
-      - node.name=elasticsearch
-      - cluster.name=elk-cluster
-      - discovery.type=single-node
-      - xpack.security.enabled=false
     healthcheck:
-      test: ["CMD-SHELL","curl -f -X GET http://localhost:${ES_PORT}/_cat/health"]
+      test: ["CMD-SHELL","curl -s http://localhost:${ES_PORT}/_cat/health | grep green"]
       interval: ${HEALTHCHECK_INTERVAL}
       timeout: 10s
       retries: 10
 
   kibana:
     container_name: kibana
-    image: kibana:${STACK_VERSION}
+    image: docker.arvancloud.ir/kibana:${STACK_VERSION}
     volumes:
       - kibana_data:/usr/share/kibana/data
     networks:
